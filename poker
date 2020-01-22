@@ -1,0 +1,84 @@
+def checkHand(hand):
+    #This function returns a tuple - 
+    #first member is the rank of the hand, the second - the highest card
+    values = [x[0] for x in hand]
+    colors = [x[1] for x in hand]
+    valuesSet = set(values)
+    colorsSet = set(colors)
+    if len(valuesSet) == 5 and values[4] - values[0] == 4 and values[4] == 14 and len(colorsSet) == 1:
+        # Royal flush
+        return (9, None)
+    elif len(valuesSet) == 5 and values[4] - values[0] == 4 and len(colorsSet) == 1:
+        #Straight flush
+        return (8, values[4])
+    elif len(valuesSet) == 2:
+        # Either four of a kind or full house
+        if values[1] == values[3]:
+            return (7, values[2])
+        else:
+            return (6, values[2])
+    elif len(colorsSet) == 1:
+        #Flush
+        return (5, values[4])
+    elif len(valuesSet) == 5 and values[4] - values[0] == 4:
+        #Straight
+        return (4, values[4])
+    elif len(valuesSet) == 3:
+        #Either three of a kind or pairs
+        for i in range(3):
+            if values[i] == values[i+2]:
+                return (3, values[i])
+        for i in range(4, 1, -1):
+            if values[i] == values[i-1]:
+                return(2, values[i])
+    elif len(valuesSet) == 4:
+        # One pair
+        for i in range(4, 0, -1):
+            if values[i] == values[i-1]:
+                return(1, values[i])
+    else:
+        # High card
+        return(0, values[4])
+        
+def tieBreaker(left, right):
+    #this function decides between equal ranking hands: 
+    #two equally ranking Pairs in each player 
+    #or five equally ranking cards in High card
+    for i in range(4, -1, -1):
+        if left[i] > right[i]:
+            return True
+        elif left[i] < right[i]:
+            return False
+#Main 
+player1wins = 0     
+with open("poker.txt") as poker:
+    for line in poker:  
+        dealt = line.split()
+        hand = []
+        #Convert to tuples and assign ranks to "face cards" and ten
+        for card in dealt:
+            tup = ()
+            if card[0] == 'A':
+                tup = (14, card[1])
+            elif card[0] == 'K':
+                tup = (13, card[1])
+            elif card[0] == 'Q':
+                tup = (12, card[1])
+            elif card[0] == 'J':
+                tup = (11, card[1])
+            elif card[0] == 'T':
+                tup = (10, card[1])
+            else:
+                tup = (int(card[0]), card[1])
+            hand.append(tup)
+        #Divide into hand of Player1 and hand of Player2
+        left = hand[:5]
+        right = hand[5:]
+        left.sort()
+        right.sort()
+        if checkHand(left) > checkHand(right):
+            player1wins +=1
+        elif checkHand(left) == checkHand(right):
+            if tieBreaker(left, right):
+                player1wins +=1
+print(player1wins)
